@@ -518,11 +518,7 @@ where
     T: Eq,
 {
     fn eq(&self, other: &LinearSet<T>) -> bool {
-        if self.len() != other.len() {
-            return false;
-        }
-
-        self.iter().all(|key| other.contains(key))
+        self.len() == other.len() && self.iter().all(|key| other.contains(key))
     }
 }
 
