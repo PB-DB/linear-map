@@ -223,6 +223,11 @@ impl<K: Eq, V> LinearMap<K, V> {
         Values { iter: self.iter() }
     }
 
+    /// Consumes the container and yields the internal vector storage.
+    pub fn into_inner(self) -> Vec<(K, V)> {
+        self.storage
+    }
+
     /// Returns a reference to the value in the map whose key is equal to the given key.
     ///
     /// Returns `None` if the map contains no such key.

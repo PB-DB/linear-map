@@ -102,6 +102,15 @@ impl<T: Eq> LinearSet<T> {
             map: LinearMap::with_capacity(capacity),
         }
     }
+
+    /// Consumes the container and yields the internal vector storage.
+    pub fn into_inner(self) -> Vec<T> {
+        self.map
+            .storage
+            .into_iter()
+            .map(|x| x.0)
+            .collect::<Vec<_>>()
+    }
 }
 
 impl<T> LinearSet<T>
