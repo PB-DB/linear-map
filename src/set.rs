@@ -102,6 +102,34 @@ impl<T: Eq> LinearSet<T> {
             map: LinearMap::with_capacity(capacity),
         }
     }
+
+    /// Consumes the container and yields the internal vector storage.
+    pub fn into_inner(self) -> Vec<T> {
+        self.map
+            .storage
+            .into_iter()
+            .map(|x| x.0)
+            .collect::<Vec<_>>()
+        /*
+        unsafe {Vec::from_raw_parts(self.map.storage.data.as_mut_ptr().cast::<i32>(), self.map.storage.data.len(), self.map.storage.data.capacity())}}
+        */
+    }
+
+    /// Consumes the container and yields the internal vector storage.
+    /// No overhead/faster option compared to into_inner, but unsafe.
+    ///
+    /// # Safety
+    /// This function should be safe; it simply requires an unsafe block.
+    /// It should yield identical results to into_inner, but without an additional memory allocation + copy.
+    pub fn into_inner_unsafe(mut self) -> Vec<T> {
+        unsafe {
+            Vec::from_raw_parts(
+                self.map.storage.as_mut_ptr().cast::<T>(),
+                self.map.storage.len(),
+                self.map.storage.capacity(),
+            )
+        }
+    }
 }
 
 impl<T> LinearSet<T>
@@ -511,6 +539,21 @@ where
     pub fn as_slice(&self) -> &[(T, ())] {
         &self.map.storage
     }
+
+    /// Returns a a slice viewing the sets values in arbitrary order.
+    ///
+    /// The item type is `(T, ())`.
+    ///```
+    /// let items = (0..5u8).filter(|x| x % 2 == 1).collect::<linear_map::set::LinearSet<u8>>();
+    /// assert_eq!(items.as_slice_unsafe(), &[1, 3u8]);
+    ///```
+    /// Since (T, ()) has the same size as T, we can cast it without breaking things.
+    /// However, this requires an unsafe block.
+    pub fn as_slice_unsafe(&self) -> &[T] {
+        let data = self.map.storage.as_ptr().cast::<T>();
+        let len = self.map.storage.len();
+        unsafe { std::slice::from_raw_parts(data, len) }
+    }
 }
 
 impl<T> PartialEq for LinearSet<T>
@@ -518,11 +561,7 @@ where
     T: Eq,
 {
     fn eq(&self, other: &LinearSet<T>) -> bool {
-        if self.len() != other.len() {
-            return false;
-        }
-
-        self.iter().all(|key| other.contains(key))
+        self.len() == other.len() && self.iter().all(|key| other.contains(key))
     }
 }
 

@@ -267,7 +267,7 @@ fn test_drain() {
             assert_eq!(last_i, 49);
         }
 
-        for _ in &s {
+        if (&s).into_iter().next().is_some() {
             panic!("s should be empty!");
         }
 
