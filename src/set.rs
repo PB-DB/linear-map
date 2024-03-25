@@ -117,12 +117,18 @@ impl<T: Eq> LinearSet<T> {
 
     /// Consumes the container and yields the internal vector storage.
     /// No overhead/faster option compared to into_inner, but unsafe.
-    pub unsafe fn into_inner_unsafe(mut self) -> Vec<T> {
-        Vec::from_raw_parts(
-            self.map.storage.as_mut_ptr().cast::<T>(),
-            self.map.storage.len(),
-            self.map.storage.capacity(),
-        )
+    ///
+    /// # Safety
+    /// This function should be safe; it simply requires an unsafe block.
+    /// It should yield identical results to into_inner, but without an additional memory allocation + copy.
+    pub fn into_inner_unsafe(mut self) -> Vec<T> {
+        unsafe {
+            Vec::from_raw_parts(
+                self.map.storage.as_mut_ptr().cast::<T>(),
+                self.map.storage.len(),
+                self.map.storage.capacity(),
+            )
+        }
     }
 }
 
