@@ -533,6 +533,21 @@ where
     pub fn as_slice(&self) -> &[(T, ())] {
         &self.map.storage
     }
+
+    /// Returns a a slice viewing the sets values in arbitrary order.
+    ///
+    /// The item type is `(T, ())`.
+    ///```
+    /// let items = (0..5u8).filter(|x| x % 2 == 1).collect::<linear_map::set::LinearSet<u8>>();
+    /// assert_eq!(items.as_slice_unsafe(), &[1, 3u8]);
+    ///```
+    /// Since (T, ()) has the same size as T, we can cast it without breaking things.
+    /// However, this requires an unsafe block.
+    pub fn as_slice_unsafe(&self) -> &[T] {
+        let data = self.map.storage.as_ptr().cast::<T>();
+        let len = self.map.storage.len();
+        unsafe { std::slice::from_raw_parts(data, len) }
+    }
 }
 
 impl<T> PartialEq for LinearSet<T>
